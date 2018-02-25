@@ -10,7 +10,10 @@ from django.dispatch import receiver
 # Create your models here.
 
 class product(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL , on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        'auth.User',
+        related_name='itemlists',
+        on_delete=models.CASCADE)
     name = models.CharField(max_length=120)
     price = models.IntegerField()
     quantity = models.IntegerField()
