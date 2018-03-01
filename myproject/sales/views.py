@@ -1,35 +1,47 @@
 from django.shortcuts import render
 
 from rest_framework import generics
-from .serialize import salesSerializers,UserSerializer
+from .serializer import salesListSerializers, salesDetailSerializers
 from .models import product
 from .permission import IsOwnerOrReadOnly
 from django.contrib.auth.models import User
+from rest_framework.permissions import AllowAny,IsAuthenticated
+from django.db.models import Q
+from rest_framework.filters import SearchFilter,OrderingFilter
 
-class createview(generics.ListCreateAPIView):
-    permission_classes = [IsOwnerOrReadOnly]
-    serializer_class = salesSerializers
+
+
+class SalesListView(generics.ListAPIView):
+    permission_classes = [AllowAny]
     queryset = product.objects.all()
+    serializer_class = salesListSerializers
+    filter_backends = [SearchFilter]
+    search_fields = ['name', 'pos', 'user__first_name']
+
+
+class SalesCreateView(generics.CreateAPIView):
+    queryset = product.objects.all()
+    serializer_class = salesListSerializers
+    permission_classes = [IsOwnerOrReadOnly]
 
     def perform_create(self, serializer):
-        """Save the post data when creating a new bucketlist."""
-        serializer.save(user = self.request.user)  # Add owner=self.request.user
+        serializer.save(user = self.request.user)
 
 
-class crudview(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsOwnerOrReadOnly]
-    serializer_class = salesSerializers
+class SalesDetailView(generics.RetrieveAPIView):
     queryset = product.objects.all()
+    serializer_class = salesDetailSerializers
+    permission_classes = [AllowAny]
 
+class SalesUpdateView(generics.RetrieveUpdateAPIView):
+    queryset = product.objects.all()
+    serializer_class = salesListSerializers
+    permission_classes = [IsOwnerOrReadOnly]
+
+
+class SalesDeleteView(generics.RetrieveDestroyAPIView):
+    queryset = product.objects.all()
+    serializer_class = salesListSerializers
+    permission_classes = [IsOwnerOrReadOnly]
 # Create your views here.
 
-class UserView(generics.ListAPIView):
-    """View to list the user queryset."""
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-
-class UserDetailsView(generics.RetrieveAPIView):
-    """View to retrieve a user instance."""
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
